@@ -1,0 +1,166 @@
+from flask import Flask, render_template_string, request
+import requests
+
+app = Flask(__name__)
+
+# Lista de localidades de Bogotá (igual que en tu PHP)
+localidades = [
+    'USAQUEN', 'CHAPINERO', 'SANTA FE', 'SAN CRISTOBAL', 'USME',
+    'TUNJUELITO', 'BOSA', 'KENNEDY', 'FONTIBON', 'ENGATIVA',
+    'SUBA', 'BARRIOS UNIDOS', 'TEUSAQUILLO', 'LOS MARTIRES',
+    'ANTONIO NARIÑO', 'PUENTE ARRENDONDO', 'LA CANDELARIA',
+    'RAFAEL URIBE URIBE', 'CIUDAD BOLIVAR', 'SUMAPAZ'
+]
+
+def obtener_paraderos_por_localidad(localidad):
+    # La URL exacta de tu proyecto PHP
+    url = "https://services1.arcgis.com/J5ltM0ovtzXUbp7B/ArcGIS/rest/services/ParaderosSITP/FeatureServer/0/query"
+    
+    # Parámetros de la consulta
+    params = {
+        'where': '1=1',
+        'outFields': '*',
+        'returnGeometry': 'true',
+        'f': 'geojson'
+    }
+    
+    try:
+        # Hacemos la petición a la API
+        respuesta = requests.get(url, params=params)
+        data = respuesta.json()
+        
+        paraderos = []
+        
+        # Verificamos si hay datos
+        if 'features' in data:
+            for feature in data['features']:
+                propiedades = feature.get('properties', {})
+                
+                # Comparación usando el campo 'LocNombre' (igual que en PHP)
+                localidad_dato = propiedades.get('LocNombre', '')
+                
+                # Verificamos si coincide con la localidad seleccionada
+                if localidad.upper() in localidad_dato.upper():
+                    coordenadas = feature.get('geometry', {}).get('coordinates', [])
+                    
+                    paraderos.append({
+                        'nombre': propiedades.get('nombre', 'Sin nombre'),
+                        'direccion': propiedades.get('direccion_') or propiedades.get('direccion') or 'Sin dirección',
+                        'latitud': coordenadas[1] if len(coordenadas) > 1 else 'No disponible',
+                        'longitud': coordenadas[0] if len(coordenadas) > 0 else 'No disponible'
+                    })
+        
+        return paraderos
+        
+    except Exception as e:
+        print(f"Error en la petición: {e}")
+        return []
+
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    localidad_buscar = ''
+    paraderos_filtrados = []
+    mensaje = ''
+    
+    # Procesamos el formulario cuando el usuario hace clic en "Consultar"
+    if request.method == 'POST':
+        localidad_buscar = request.form.get('localidad', '')
+        
+        if localidad_buscar:
+            # Llamamos a la función que trae los datos de la API
+            paraderos_filtrados = obtener_paraderos_por_localidad(localidad_buscar)
+            
+            if not paraderos_filtrados:
+                mensaje = f"No se encontraron paraderos en la localidad '{localidad_buscar}'."
+
+    # HTML de la página
+    html = """
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <title>Paraderos SITP por Localidad (Python)</title>
+        <style>
+            body { font-family: Arial, sans-serif; max-width: 1000px; margin: 40px auto; padding: 20px; background: #f0f4f8; }
+            .container { background: white; border-radius: 10px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+            h1 { color: #1a365d; border-bottom: 3px solid #2b6cb0; padding-bottom: 10px; }
+            .form-group { display: flex; gap: 10px; align-items: center; margin: 20px 0; }
+            select { padding: 10px; border-radius: 5px; border: 2px solid #cbd5e0; font-size: 16px; flex: 1; }
+            button { background: #2b6cb0; color: white; border: none; padding: 10px 30px; border-radius: 5px; font-size: 16px; cursor: pointer; }
+            button:hover { background: #1a4f8b; }
+            .mensaje { padding: 12px; border-radius: 5px; margin: 15px 0; background: #fefcbf; color: #744210; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th { background: #2b6cb0; color: white; padding: 12px; text-align: left; }
+            td { padding: 10px; border-bottom: 1px solid #e2e8f0; }
+            .contador { background: #edf2f7; padding: 8px 16px; border-radius: 20px; display: inline-block; margin-top: 10px; }
+            .footer { margin-top: 30px; font-size: 14px; color: #718096; text-align: center; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>🚌 Paraderos SITP por Localidad</h1>
+            <p>Selecciona una localidad para ver sus paraderos (Datos reales de la API).</p>
+            
+            <form method="POST">
+                <div class="form-group">
+                    <select name="localidad" required>
+                        <option value="">-- Selecciona una localidad --</option>
+                        {% for loc in localidades %}
+                            <option value="{{ loc }}" {% if loc == localidad_buscar %}selected{% endif %}>{{ loc }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit">🔍 Consultar Paraderos</button>
+                </div>
+            </form>
+            
+            {% if mensaje %}
+                <div class="mensaje">{{ mensaje }}</div>
+            {% endif %}
+            
+            {% if paraderos_filtrados %}
+                <div class="contador">
+                    📍 {{ paraderos_filtrados|length }} paraderos encontrados en <strong>{{ localidad_buscar }}</strong>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Nombre del Paradero</th>
+                            <th>Dirección</th>
+                            <th>Latitud</th>
+                            <th>Longitud</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in paraderos_filtrados %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ p.nombre }}</td>
+                            <td>{{ p.direccion }}</td>
+                            <td>{{ p.latitud }}</td>
+                            <td>{{ p.longitud }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
+            
+            <div class="footer">
+                <p>📝 Evidencia SENA - Consumo de API Pública (Python Flask)</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    
+    # Pasamos los datos a la plantilla HTML
+    return render_template_string(
+        html, 
+        localidades=localidades, 
+        localidad_buscar=localidad_buscar, 
+        paraderos_filtrados=paraderos_filtrados, 
+        mensaje=mensaje
+    )
+
+if __name__ == '__main__':
+    app.run(debug=True, port=5000)
