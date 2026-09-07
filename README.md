@@ -28,5 +28,10 @@ Aplicación web para consultar los paraderos del SITP por localidad. Consume la 
 
 ## Instalación - Versión PHP
 1. Clonar el repositorio.
-2. Copiar a `C:\xampp\htdocs\paraderos\`
-3. Abrir en el navegador desde XAMPP.
+2. ## Capturas de pantalla (Versión Python)
+
+![Captura 1](Capturas%20versi%C3%B3n%20Python.png)
+![Captura 2](Capturas%20versi%C3%B3n%20Python1.png)
+![Captura 3](Capturas%20versi%C3%B3n%20Python2.png)
+3. Copiar a `C:\xampp\htdocs\paraderos\`
+4. Abrir en el navegador desde XAMPP.
