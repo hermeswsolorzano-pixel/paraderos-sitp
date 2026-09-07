@@ -1,40 +1,32 @@
-#  Paraderos SITP por Localidad
+# Paraderos SITP por Localidad
 
-##  Descripción
-Aplicación web en PHP que consume la API pública de Datos Abiertos de Bogotá para consultar paraderos del SITP por localidad.
+## Descripción
+Aplicación web para consultar los paraderos del SITP por localidad. Consume la API pública de Datos Abiertos de Bogotá.
 
-##  Tecnologías
-- PHP 8.2
-- HTML5 / CSS3
-- XAMPP
-- ArcGIS REST API
+**Este repositorio contiene dos versiones del proyecto:**
+1. **Versión PHP:** Consume la API usando PHP 8.2 y se ejecuta en XAMPP.
+2. **Versión Python:** Consume la misma API usando Python con el framework Flask.
 
-##  Características
--  Menú desplegable con 20 localidades de Bogotá
--  Consulta a la API pública del SITP
--  Filtrado de paraderos por localidad
--  Visualización en tabla HTML
--  Manejo de errores
--  Documentación del código
+## Tecnologías
+- **Python 3** (Flask, Requests, Jinja2)
+- **PHP 8.2**
+- **HTML5 / CSS3**
+- **ArcGIS REST API** (Datos Abiertos Bogotá)
 
-##  Instalación
-1. Clonar el repositorio
+## Características
+- Menú desplegable con 20 localidades de Bogotá.
+- Consulta a la API pública del SITP.
+- Filtrado de paraderos por localidad.
+- Visualización en tabla HTML.
+- Manejo de errores.
+
+## Instalación - Versión Python
+1. Clonar el repositorio.
+2. Instalar las dependencias: `pip install flask requests`
+3. Ejecutar la aplicación: `python app.py`
+4. Abrir en el navegador: `http://127.0.0.1:5000`
+
+## Instalación - Versión PHP
+1. Clonar el repositorio.
 2. Copiar a `C:\xampp\htdocs\paraderos\`
-3. Iniciar Apache en XAMPP
-4. Acceder a `http://localhost/paraderos/`
-
-## 📸 Evidencia de funcionamiento
-
-### Localidad: SANTA FE (32 paraderos encontrados)
-![Santa Fe](captura1.jpeg)
-
-### Localidad: USAQUEN
-![Usaquen](captura2.jpeg)
-
-##  Autor
-Hermes Solorzano
-
-
-
-## 📚 Contexto
-Esta evidencia fue desarrollada como parte de la formación en el SENA, demostrando la capacidad de consumir APIs públicas y procesar datos en PHP.
+3. Abrir en el navegador desde XAMPP.
